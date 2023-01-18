@@ -1,0 +1,13 @@
+@FUTURE-AUX 0 = zullen
+
+@DEFINITE-DET 0 = (het|de|dit|deze|dat|die)
+
+@INDEFINITE-DET 0 = (een|wat)
+
+@UNIVERSAL-QUANTIFIER 0 = elk
+
+@INF-MARK 0 = te
+
+@CONJUNCTION 0 = en
+
+@DISJUNCTION 0 = of

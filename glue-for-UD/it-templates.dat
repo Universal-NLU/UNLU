@@ -1,0 +1,13 @@
+@FUTURE-AUX 0 = æøå
+
+@DEFINITE-DET 0 = (il|questo|quello)
+
+@INDEFINITE-DET 0 = uno
+
+@UNIVERSAL-QUANTIFIER 0 = ogni
+
+@INF-MARK 0 = (di|a)
+
+@CONJUNCTION 0 = e
+
+@DISJUNCTION 0 = o

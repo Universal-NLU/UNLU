@@ -1,0 +1,16 @@
+VERB(X) = ((v($X) -o t($X)) -o p($X)
+
+
+
+
+
+
+hei \a\b. : @VERB(^) --o 
+
+
+type Template = [Replace] -> Replace
+
+
+applyTemplate
+
+getAllTextMatches (s =~ "@(\\(([^)]*\\))") :: [String]

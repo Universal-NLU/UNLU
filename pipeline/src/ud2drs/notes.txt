@@ -1,0 +1,14 @@
+- more fine grained origin index (see the conjunction rules) 
+
+we probably want to implement some lightweight FUs that can be passed to navigateByRelation as follows (NB: no feature matching, just relations; though the relation can be "mother")
+
+navigateByRelation tp [T.pack "obl", T.pack "det"]
+
+The problem is then how to deal with situations where there is no or multiple matches. navigateByRelation throws an error. Do we want to default to the current node?
+
+Currently implemented with Maybe monad, but NB that we want *global* uniqueness, i.e. "conj cc" is ok even if there are several conj daughters, as long as only one of them has (only one) cc daughter.
+
+
+
+
+- offset marks show up in "named" constraints because the built into the lemma finding function!

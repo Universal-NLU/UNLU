@@ -1,0 +1,242 @@
+relation = parataxis -> STOP
+relation = expl -> STOP
+relation = dislocated -> STOP
+relation = discourse -> STOP
+relation = vocative -> STOP
+
+relation = flat ->
+
+relation = nsubj; PronType=Rel -> @gap-type-verbal-dep(nsubj^)
+relation = nsubj:pass; PronType=Rel -> @gap-type-verbal-dep(nsubj_pass^)
+relation = obj; PronType=Rel -> @gap-type-verbal-dep(obj^)
+relation = iobj; PronType=Rel -> @gap-type-verbal-dep(iobj^)
+relation = gf; PronType=Rel -> @gap-type-verbal-dep(gf^)
+relation = nmod:poss; PronType=Rel -> \X.\P.\Y.(([], [poss*(X,Y)]) + P(Y)) : (e(!) -o (@et(^) -o @et(^)))
+PronType=Rel ->
+
+relation = advmod; @NEGATIVE -> \P.(-P) : p(^) -o p(^)
+
+# relation = root; advmod { @NEGATIVE } -> \P.(-P) : p(!) -o p(!)
+
+relation = conj; coarsePos = VERB; ~ ^ {relation = amod}; ~ ^ {relation = xcomp}; ~ ^ {relation = advcl} -> \V.\U.\F.(U(F) + V(\G.([],[]))) : x(!) -o x(^) -o x(^)
+
+relation = conj; coarsePos = ADJ; ~ ^ {relation = amod} -> \V.\U.\F.(U(F) + V(\G.([],[]))) : x(!) -o x(^) -o x(^)
+
+relation = conj; coarsePos = NOUN; ^ {relation = root}; ^ nsubj {  } -> \V.\U.\F.(U(F) + V(\G.([],[]))) : x(!) -o x(^) -o x(^)
+
+relation = conj; coarsePos = VERB; ~ nsubj {}; ^ {relation = xcomp} -> \V.\X.\E.(V(\E1.(([],[xcomp(E,E1), nsubj(E1,X)])))) : x(!) -o (e(!) -o v(!) -o t(!))
+
+relation = conj; coarsePos = VERB; ~ nsubj {}; ^ {relation = xcomp} -> \P.\Q.\X.\E.(P(X)(E)+Q(X)(E)) : (e(!) -o v(!) -o t(!)) -o (e(^) -o v(^) -o t(^)) -o e(^) -o v(^) -o t(^)
+
+relation = mark; ^ {relation = conj}; ^ ^ {relation = advcl} -> \U.\V.\F.V(\E.(([], [:LEMMA:(E, U(\G.([],[])))]) + F(E))) : x(^) -o x(^ ^ ^) -o x(^ ^ ^)
+
+relation = conj; ~ mark { }; ^ {relation = advcl} -> \U.\V.\F.V(\E.(([], [advcl(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^ ^) -o x(^ ^)
+
+relation = conj; ^ {relation = amod} -> \V.\P.\X.(V(\E.([],[Attribute*(X,E)])) + P(X)) : (x(!) -o (@et(^ ^) -o @et(^ ^)))
+
+relation = conj; ^ {relation = nmod}; ~ case { } -> \Q.\P.\X.((Q(\Y.([], [nmod*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^ ^) -o @et(^ ^)))
+
+relation = case; ^ {relation = conj};  ^ ^ {relation = nmod} -> \Q.\P.\X.((Q(\Y.([], [:LEMMA:*(X,Y)] ))) + P(X)) : (@quant("^" "^ ^") -o (@et(^ ^ ^) -o @et(^ ^ ^)))
+
+relation = case; ^ {relation = conj}; ^ ^ {relation = nmod:poss} ->
+
+relation = conj; ^ {relation = nmod:poss} -> \Q.\P.\X.((Q(\Y.([], [poss*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^ ^) -o @et(^ ^)))
+
+relation = conj; ^ {relation = advmod}; ! {PronType=Int}; ~ ^ ^ {relation = (amod|advmod)} -> \P.\F.P(\E(([X], [:INTR:*(X), EQ*(X, `?`), :LEMMA:*(E,X)]) + F(E))) : (x(^ ^) -o x(^ ^))
+
+relation = conj; ^ {relation = advmod}; !{PronType=Int}; ^ ^ {relation = (amod|advmod)} -> \P.\X.(([Y],[:INTR:*(Y), EQ*(Y, `?`), :LEMMA:*(X,Y)]) + P(X)) : (v(^ ^) -o t(^ ^)) -o v(^ ^) -o t(^ ^)
+
+relation = conj; ^ {relation = advmod}; ~ ! {PronType=Int} -> \X.(([],[:INTR:*(X), :LEMMA:*(X)])) : v(!) -o t(!)
+
+relation = conj; ^ {relation = advmod}; ~ ! {PronType=Int}; ~ ^ ^ {relation = (amod|advmod)} ->  \Q.\P.\F.P(\E(([X], [advmod*(E,X)]) + F(E) + Q(X))) : (v(!) -o t(!)) -o (x(^ ^) -o x(^ ^))
+
+relation = conj; ^ {relation = advmod}; ~ ! {PronType=Int}; ^ ^ {relation = (amod|advmod)} -> \Q.\P.\X.(([Y],[:INTR:*(Y), :LEMMA:*(Y), advmod*(X,Y)]) + P(X) + Q(X)) : (v(!) -o t(!)) -o (v(^ ^) -o t(^ ^)) -o v(^ ^) -o t(^ ^)
+
+relation = conj; ^ {relation = obl.*}; ~ case { } -> @e-type-verbal-dep-mng(obl) : @e-type-verbal-dep-type("!" "%h" "^ ^") : %h = ^
+
+relation = case; ^ {relation = conj}; ^ ^ {relation = obl.*} -> @e-type-verbal-dep-mng(:LEMMA:) : @e-type-verbal-dep-type("^" "%h" "^ ^ ^") : %h = ^ ^
+
+coarsePos = (PROPN|NOUN|PRON); ! conj cc{lemma = @CONJUNCTION }; ~ ! conj case { }; relation = @CORE-NOMINAL-REL -> \R.\S.(([X],[:INTR:{conj cc}(X), entity(X)]) + R(X) + S(X)) : @et(%C) -o @quant("!" "^")
+
+coarsePos = (PROPN|NOUN|PRON); ! conj cc{lemma = @CONJUNCTION }; ~ ! conj case { }; relation = root; ~ ! nsubj {  }; ~ ! cop { } -> \R.\S.(([X],[:INTR:{conj cc}(X), entity(X)]) + R(X) + S(X)) : @et(%C) -o @quant("!" "^")
+
+coarsePos = (PROPN|NOUN|PRON); ! conj cc {lemma = @CONJUNCTION }; ~ ! conj case { }; relation = @CORE-NOMINAL-REL -> \Q.\X.(Q(\Z.(([],[Sub{conj cc}(X,Z)])))) : @quant("!" "^") -o @et(%C)
+
+coarsePos = (PROPN|NOUN|PRON); ! conj cc {lemma = @CONJUNCTION }; ~ ! conj case { }; relation = root; ~ ! nsubj {  }; ~ ! cop { } -> \Q.\X.(Q(\Z.(([],[Sub{conj cc}(X,Z)])))) : @quant("!" "^") -o @et(%C)
+
+coarsePos = (PROPN|NOUN|PRON); relation = conj; ^ conj cc {lemma = @CONJUNCTION }; ~ ! case {}; ^ { relation = @CORE-NOMINAL-REL } -> \Q.\P.\X.(Q(\Z.(([],[Sub{^ conj cc}(X,Z)]))) + P(X)) : @quant("!" "^") -o (@et(%C) -o @et(%C))
+
+coarsePos = (PROPN|NOUN|PRON); relation = conj; ^ conj cc {lemma = @CONJUNCTION }; ~ ! case {}; ^ { relation = root }; ~ ^ nsubj { }; ~ ^ cop { } -> \Q.\P.\X.(Q(\Z.(([],[Sub{^ conj cc}(X,Z)]))) + P(X)) : @quant("!" "^") -o (@et(%C) -o @et(%C))
+
+coarsePos = (PROPN|NOUN|PRON); relation = conj; ^ conj cc {lemma = @DISJUNCTION }; ~ ! case {}; ^ { relation = @CORE-NOMINAL-REL } -> \Q1.\Q2.\P.(([Y], [Q1(\X.(([],[X=Y]))) | Q2(\Z.(([],[Z=Y])))]) + P(Y)) : @quant("^" "^ ^") -o @quant("!" "^") -o @quant("^" "^ ^")
+
+coarsePos = VERB -> \F.(([E],[:INTR:*(E), :LEMMA:(E)]) + F(E) ) : x(!)
+
+coarsePos = VERB; ~ aux; Tense=Past -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+
+coarsePos = VERB; ~ aux; Tense=Pres -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+
+coarsePos = VERB; ~ aux; Tense=Fut -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+
+coarsePos = VERB; ~ aux; Tense=Imp -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+
+coarsePos = VERB; ~ aux; Tense=Pqp -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+
+coarsePos = NOUN -> \X.([],[:LEMMA:(X) ] ) : @et(!)
+coarsePos = PROPN -> \X.([], [Name(X, `:LEMMA:`)]) : @et(!)
+
+coarsePos = (PROPN|NOUN); relation = (root|@CLAUSAL-REL ); ! (nsubj|cop) { } -> \V.(V(\F.( [],[] ))) : (x(!) -o p(!))
+
+coarsePos = (PROPN|NOUN); relation = root ; ~ ! gf {coarsePos = ADP}; ! (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [be{cop}(E), Co_Theme(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+
+coarsePos = (PROPN|NOUN); relation = conj ; ^ {relation = root}; ~ ! gf {coarsePos = ADP}; ^ (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [be{cop}(E), Co_Theme(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+
+coarsePos = (PROPN|NOUN); relation = conj; ^ {relation = @CLAUSAL-REL }; ~ ! gf {coarsePos = ADP} -> \Q.\F.(Q(\X.(([E], [be{^ cop}(E), Co_Theme{^ cop}(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+
+coarsePos = (PROPN|NOUN); relation = @CLAUSAL-REL ; ~ ! gf {coarsePos = ADP} -> \Q.\F.(Q(\X.(([E], [be{cop}(E), Co_Theme(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+
+coarsePos = ADP; ^ {relation = root}; ^ {coarsePos = (PROPN|NOUN)}; ^ (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [:INTR:{^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+
+coarsePos = ADP; ^ {relation = conj}; ^ {coarsePos = (PROPN|NOUN)}; ^ ^ {relation = root}; ^ ^ (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [:INTR:{^ ^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+
+coarsePos = ADP; ^ {relation = conj}; ^ {coarsePos = (PROPN|NOUN)}; ^ ^ {relation = @CLAUSAL-REL } -> \Q.\F.(Q(\X.(([E], [:INTR:{^ ^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+
+coarsePos = ADP; ^ {relation = @CLAUSAL-REL }; ^ {coarsePos = (PROPN|NOUN)} -> \Q.\F.(Q(\X.(([E], [:INTR:{^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+
+coarsePos = ADJ; relation=(nsubj|obj|iobj|obl.*) -> \X.([], [:LEMMA:(X)]) : @et(!)
+
+coarsePos = ADJ; relation=(nsubj|obj|iobj|obl.*); ~ det { } -> \P.\Q.(([X],[:INTR:*(X) ]) + P(X) + Q(X) ) : (@et(!) -o @quant("!" "^"))
+
+coarsePos = ADJ; ~ relation = amod; ~ ^ {relation = amod} -> \F.(([S], [:INTR:*(S), :LEMMA:*(S)]) + F(S)) : x(!)
+
+coarsePos = ADJ; relation = root -> \V.(V(\F.( [],[] ))) : (x(!) -o p(!))
+
+coarsePos = PRON; Person=1; Number=Sing -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`speaker`)]) + P(X)) : @quant("!" "^")
+
+coarsePos = PRON; Person=1; Number=Plur -> \P.(([X,Y], [:INTR:*(X), person*(X), Sub*(X,`speaker`)]) + P(X)) : @quant("!" "^")
+
+coarsePos = PRON; Person=1; ~ Number=Sing; ~ Number=Plur -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`speaker`)]) + P(X)) : @quant("!" "^")
+
+coarsePos = PRON; Person=2; Number=Sing -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`hearer`)]) + P(X)) : @quant("!" "^")
+
+coarsePos = PRON; Person=2; Number=Plur -> \P.(([X,Y], [:INTR:*(X), person*(X), Sub*(X,`hearer`)]) + P(X)) : @quant("!" "^")
+
+coarsePos = PRON; Person=2; ~ Number=Sing; ~ Number=Plur -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`hearer`)]) + P(X)) : @quant("!" "^")
+
+coarsePos = PRON; ~ Person=1; ~ Person=2 -> \P.(([],[PRESUPPOSITION(([X], [:INTR:*(X),entity*(X)]))]) + P(X)) : @quant("!" "^")
+
+# coarsePos = PRON; ~ Person=1; ~ Person=2; Gender=Masc -> \P.(([],[PRESUPPOSITION(([X], [:INTR:*(X), male*(X)]))]) + P(X)) : @quant("!" "^")
+
+# coarsePos = PRON; ~ Person=1; ~ Person=2; Gender=Fem -> \P.(([],[PRESUPPOSITION(([X], [:INTR:*(X), female*(X)]))]) + P(X)) : @quant("!" "^")
+
+relation = root, coarsePos = VERB -> \V.(V(\E.( [],[] ))) : (x(!) -o p(!))
+
+relation = root; coarsePos = (PROPN|NOUN); ~ nsubj { }; ~ cop { } -> \X.([E],[event(E), Participant(E,X)]) : (e(!) -o p(^))
+
+relation = nsubj; ^ {coarsePos=VERB} -> @e-type-verbal-dep(nsubj^) : %h = @arg-scope
+relation = nsubj:pass -> @e-type-verbal-dep(nsubj_pass^) : %h = @arg-scope
+
+relation = nsubj; ^ {coarsePos=(PROPN|NOUN)} -> @e-type-verbal-dep(Theme{^ cop}) : %h = @arg-scope
+
+relation = nsubj; ^ {coarsePos=ADJ} -> @e-type-verbal-dep-inverse(Attribute^) : %h = @arg-scope
+
+relation = obj -> @e-type-verbal-dep(obj^) : %h = @arg-scope
+
+relation = iobj -> @e-type-verbal-dep(iobj^) : %h = @arg-scope
+
+relation = obl.*; ~ case { }; ~ relation = obl:tmod -> @e-type-verbal-dep(obl^) : %h = @arg-scope
+relation = case; ^ {relation = obl.*}; ~ ^{relation = obl:tmod} -> @e-type-verbal-dep-mng(:LEMMA:) : @e-type-verbal-dep-type("^" "%h" "^ ^") : %h = ^ ^
+
+relation = obl:tmod; ~ case { } -> @e-type-verbal-dep(Time^) : %h = @arg-scope
+
+relation = gf -> @e-type-verbal-dep(gf^) : %h = @arg-scope
+
+relation = csubj ->  \U.\V.\F.V(\E.(([], [csubj^(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+
+relation = ccomp; ~ mark { }; advmod { @NEGATIVE } ->  \U.\V.\F.V(\E.(([], [ccomp^(E, -U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+relation = ccomp; ~ mark { }; ~ advmod { @NEGATIVE } ->  \U.\V.\F.V(\E.(([], [ccomp^(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+
+relation = xcomp; coarsePos = VERB; ~ nsubj {} -> \V.\X.\E.(V(\E1.(([],[xcomp(E,E1), nsubj(E1,X)])))) : x(!) -o (e(!) -o v(!) -o t(!))
+
+relation = xcomp; coarsePos = VERB; ~ nsubj {} -> \W.\V.\F.(V(\E.(([X],[control_rel(E,X)]) + W(X)(E) + F(E)))) : (e(!) -o v(!) -o t(!)) -o (x(^) -o x(^))
+
+relation = advcl; ~ mark { } -> \U.\V.\F.V(\E.(([], [advcl^(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+
+relation = acl; coarsePos = VERB -> \V.\P.\X.(V(\E.(P(X) + ([], [Participant*(E,X)])))) : x(!) -o (@et(^) -o @et(^))
+
+relation = acl:relcl -> \P.\V.\X.(P(X) + ((V(X))(\X.([],[])))) : (@et(^) -o ((e(! gf* gf{PronType=Rel}) -o x(!)) -o @et(^)))
+
+relation = nmod; ~ case { } -> \Q.\P.\X.((Q(\Y.([], [nmod*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^) -o @et(^)))
+relation = case; ^ {relation = nmod} -> \Q.\P.\X.((Q(\Y.([], [:LEMMA:(X,Y)] ))) + P(X)) : (@quant("^" "^ ^") -o (@et(^ ^) -o @et(^ ^)))
+relation = case; ^ {relation = nmod:poss} ->
+relation = nmod:poss ->  \Q.\P.\X.((Q(\Y.([], [poss*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^) -o @et(^)))
+
+coarsePos = VERB; relation = amod -> \V.\P.\X.(V(\E.([],[Attribute^(X,E)])) + P(X)) : (x(!) -o (@et(^) -o @et(^)))
+
+coarsePos = ADJ; relation = amod -> \F.(([E],[:INTR:*(E), :LEMMA:(E)]) + F(E) ) : x(!)
+
+coarsePos = ADJ; ^ {relation = amod} -> \F.(([E],[:INTR:*(E), :LEMMA:(E)]) + F(E) ) : x(!)
+
+coarsePos = ADJ; relation = amod -> \A.\P.\X.(A(\E.([],[Attribute^(X,E)])) + P(X)) : (x(!) -o (@et(^) -o @et(^)))
+
+relation = advmod; ~ ! {PronType=Int}; @AFFIRMATIVE -> \X.(([],[:INTR:*(X), :LEMMA:*(X)])) : v(!) -o t(!)
+
+relation = advmod; ~ ! {PronType=Int}; ~ ^ {relation = (amod|advmod)}; @AFFIRMATIVE ->  \Q.\P.\F.P(\E(([X], [advmod*(E,X)]) + F(E) + Q(X))) : (v(!) -o t(!)) -o (x(^) -o x(^))
+
+relation = advmod; ~ ! {PronType=Int}; ^ {relation = (amod|advmod)}; @AFFIRMATIVE -> \Q.\P.\X.(([Y],[:INTR:*(Y), :LEMMA:*(Y), advmod*(X,Y)]) + P(X) + Q(X)) : (v(!) -o t(!)) -o (v(^) -o t(^)) -o v(^) -o t(^)
+
+relation = advmod; !{PronType=Int}; ~ ^ {relation = (amod|advmod)} -> \P.\F.P(\E(([X], [:INTR:*(X), EQ*(X, `?`), :LEMMA:*(E,X)]) + F(E))) : (x(^) -o x(^))
+
+relation = advmod; !{PronType=Int}; ^ {relation = (amod|advmod)} -> \P.\X.(([Y],[:INTR:*(Y), EQ*(Y, `?`), :LEMMA:*(X,Y)]) + P(X)) : (v(^) -o t(^)) -o v(^) -o t(^)
+
+relation = appos -> \P.\Q.\X.(P(X) + Q(X)) : (@et(!) -o (@et(^) -o @et(^)))
+
+relation = aux; lemma = @FUTURE-AUX ; @NO-TENSE(!) -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = aux; Tense=Pres; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Past; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Fut; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Imp; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Pqp; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = aux; @NO-TENSE(!); @NO-TENSE(^); ~ lemma = @FUTURE-AUX -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = aux:pass; ! {Tense=Pres}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Past}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Fut}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Imp}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Pqp}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = aux:pass; @NO-TENSE(!); @NO-TENSE(^ aux); ~ ^ aux {lemma=@FUTURE-AUX } -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = aux:pass; @NO-TENSE(!); ^ aux {Tense=Pres}; ~ ^ aux {Tense=Past} -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = aux:pass; @NO-TENSE(!); ^ aux {Tense=Past} -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = cop; Tense=Pres -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Past -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Fut -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Imp -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Pqp -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+
+relation = mark; lemma = @INF-MARK ; ^ mark {lemma != @INF-MARK } ->
+
+relation = mark; ^ {relation = advcl} -> \U.\V.\F.V(\E.(([], [:LEMMA:(E, U(\G.([],[])))]) + F(E))) : x(^) -o x(^ ^) -o x(^ ^)
+
+relation = mark; ^ {relation = ccomp} -> \U.\V.\F.V(\E.(([], [:LEMMA:_ccomp(E, U(\G.([],[])))]) + F(E))) : x(^) -o x(^ ^) -o x(^ ^)
+
+coarsePos = DET; ^ {relation = appos} ->
+
+relation = det; ! {PronType=Int} -> \P.\Q.(([X],[:INTR:*(X), EQ*(X,`?`)]) + P(X) + Q(X) ) : (@et(^) -o ((e(^) -o p(%h)) -o p(%h))) : %h = ^ ^
+
+relation = det; lemma = @DEFINITE-DET -> \P.\Q.(([],[PRESUPPOSITION((([X],[:INTR:*(X)]) + P(X)))]) + Q(X)) : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+relation = det; lemma = @INDEFINITE-DET ->   \P.\Q.(([X],[:INTR:*(X)]) + P(X) + Q(X) )  : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+relation = det; lemma = @UNIVERSAL-QUANTIFIER -> \P.\Q.([ ],[ ((([X],[:INTR:*(X)]) + P(X)) => (Q(X))) ]) : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+
+# relation = det; Definite=Def -> \P.\Q.(([],[PRESUPPOSITION((([X],[:INTR:*(X)]) + P(X)))]) + Q(X)) : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+
+coarsePos = NOUN; ~ det { }; ~ ! {relation=compound} -> \P.\Q.(([X],[:INTR:*(X)]) + P(X) + Q(X) ) : (@et(!) -o @quant("!" "^"))
+
+coarsePos = PROPN; ~ relation = appos; ~ relation = compound; ~ det { } -> \P.\Q.(([],[PRESUPPOSITION((([X],[:INTR:*(X)]) + P(X)))]) + Q(X)) : (@et(!) -o @quant("!" "^"))
+
+relation = compound; coarsePos = NOUN|PROPN -> \Q.\P.\X.(([Y], [compound(X,Y)]) + Q(Y) + P(X))  : @et(!) -o @et(^) -o @et(^)

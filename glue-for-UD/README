@@ -1,0 +1,6 @@
+This directory contains
+
+rules.dat -- rules for converting UD graphs to DRSs
+test.conllu - a (very) small test suite of UD graphs to convert
+
+You need to have ud2drs-exe in your path to apply the rules to the test set. ud2drs-exe is available from <https://github.uio.no/Universal-NLU/pipeline/src/ud2drs>.

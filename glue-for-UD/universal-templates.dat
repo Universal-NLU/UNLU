@@ -1,0 +1,54 @@
+@CONJUNCTION 0 = .*
+
+@DISJUNCTION 0 = æøå
+
+@CLAUSAL-REL 0 = (xcomp|ccomp|acl|advcl|csubj)
+
+@CORE-NOMINAL-REL 0 = (nsubj|obj|iobj)
+
+@CORE-CLAUSAL-REL 0 = (csubj|ccomp|xcomp)
+
+@CORE-REL 0 = ( @CORE-NOMINAL-REL | @CORE-CLAUSAL-REL )
+
+@et 1 = (e(#1) -o t(#1))
+
+@quant 2 = ((e(#1) -o p(#2)) -o p(#2))
+
+@gap-type-verbal-dep-mng 1 = \V.\X.\F.V(\E.(([], [#1(E,X)]) + F(E)))
+
+@gap-type-verbal-dep-type 2 = (x(#2) -o (e(#1) -o x(#2)))
+
+@gap-type-verbal-dep 1 = @gap-type-verbal-dep-mng(#1) : @gap-type-verbal-dep-type("!" "^")
+
+@NEGATIVE 0 = Polarity=Neg
+
+@AFFIRMATIVE 0 = Polarity!=Neg
+
+@PRES-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), EQ*(#1, `now`)])), Time*(#2,#1)]))
+
+@PAST-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(#1, `now`)])), Time*(#2,#1)]))
+
+@FUT-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(`now`,#1)])), Time*(#2,#1)]))
+
+@IMP-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(#1, `now`)])), Time*(#2,#1)]))
+
+@PQP-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(#1, `now`)])), Time*(#2,#1)]))
+
+# @TENSE-DRS 3 = ([#1],[time(#1), Time(#2,#1), #3])
+# @PRES-DRS 2 = @TENSE-DRS("#1" "#2" "EQU(#1,`now`)")
+# @PAST-DRS 2 = @TENSE-DRS("#1" "#2" "TPR(#1,`now`)")
+# @FUT-DRS 2 = @TENSE-DRS("#1" "#2" "TPR(`now`,#1)")
+
+@e-type-verbal-dep-mng 1 = \Q.\V.\F.(Q(\X.(V(\E.(([], [#1(E,X)]) + F(E))))))
+@e-type-verbal-dep-mng-inverse 1 = \Q.\V.\F.(Q(\X.(V(\E.(([], [#1(X,E)]) + F(E))))))
+
+@e-type-verbal-dep-type 3 = (@quant("#1" "#2") -o (x(#3) -o x(#3)))
+
+@e-type-verbal-dep 1 = @e-type-verbal-dep-mng(#1) : @e-type-verbal-dep-type("!" "%h" "^")
+@e-type-verbal-dep-inverse 1 = @e-type-verbal-dep-mng-inverse(#1) : @e-type-verbal-dep-type("!" "%h" "^")
+
+@arg-scope 0 = ^
+
+@det-scope 0 = ^ ^
+
+@NO-TENSE 1 = ~ #1 {Tense=Past}; ~ #1 {Tense=Pres}; ~ #1 {Tense=Fut}; ~ #1 {Tense=Imp}; ~ #1 {Tense=Pqp}

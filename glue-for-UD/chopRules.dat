@@ -1,0 +1,41 @@
+! {PronType=Rel} -> 
+# Standalone NPs, e.g. headings, have a different structure from normal main clauses
+relation = root; coarsePos = (NOUN|PROPN); ~ nsubj { } -> ([],[DUMMY]) : p(^)
+# Standard goal for the main clause
+relation = root  -> ([],[DUMMY]) : p(!)
+# Appositions
+relation = appos -> \P.\X.(([],[DUMMY_APPOSITION(X) ] ) + P(X)) : ((e(^) -o t(^)) -o (e(^) -o t(^)))
+# Arguments are islands
+relation = nsubj -> \V.\F.(V(\E.(([X], [nsubj(E,X), DUMMY(X)]) + F(E)))) : (x(^) -o x(^))
+relation = nsubj:pass -> \V.\F.(V(\E.(([X], [nsubj_pass(E,X), DUMMY(X)]) + F(E)))) : (x(^) -o x(^))
+relation = obj -> \V.\F.(V(\E.(([X], [obj(E,X), DUMMY(X)]) + F(E)))) : (x(^) -o x(^))
+relation = iobj -> \V.\F.(V(\E.(([X], [iobj(E,X), DUMMY(X)]) + F(E)))) : (x(^) -o x(^))
+relation = dep -> \V.\F.(V(\E.(([X], [dep(E,X), DUMMY(X)]) + F(E)))) : (x(^) -o x(^))
+relation = obl -> \V.\F.(V(\E.(([X], [obl(E,X), DUMMY(X)]) + F(E)))) : (x(^) -o x(^))
+relation = ccomp -> \V.\F.V(\E.(([], [ccomp(E,DUMMY_PROPOSITION)]) + F(E))) : (x(^) -o x(^))
+relation = xcomp -> \V.\F.V(\E1.(([E,X],[DUMMY_VERB(E), xcomp(E1,E), nsubj(E,X)]) + F(E1))) : (x(^) -o x(^))
+
+# Other basic rels
+relation = acl; coarsePos = VERB -> \P.\X.(P(X) + ([E],[DUMMY(E), Participant(E,X)])) : (@et(^) -o @et(^))
+
+## Coordinate structures
+# roots and ccomps
+relation = conj; coarsePos = VERB; ~ ^ {relation = amod}; ~ ^ {relation = xcomp}; ~ ^ {relation = advcl} -> \U.\F.(U(F) + ([G],[DUMMY_VERB(G)])) : (x(^) -o x(^))
+# relation = conj; coarsePos = NOUN; ^ {relation = root}; ^ nsubj { } -> \U.\F.(U(F) + ([G],[DUMMY_PRED_NOUN(G)])) : (x(^) -o x(^))
+relation = conj; coarsePos = ADJ; ~ ^ {relation = amod} -> \U.\F.(U(F) + ([G],[DUMMY_PRED_ADJ(G)])) : (x(^) -o x(^))
+# xcomps
+relation = conj; coarsePos = VERB; ^ {relation = xcomp} -> \Q.\X.\E.((([E1],[DUMMY_VERB(E1), nsubj*(E1,X)]) + Q(X)(E))) : ((e(^) -o v(^) -o t(^)) -o e(^) -o v(^) -o t(^))
+# amods
+relation = conj; ^ {relation = amod} -> \P.\X.(([G],[DUMMY_ADJ(G), Attribute(X,G)]) + P(X)) : (@et(^ ^) -o @et(^ ^))
+# advmods
+relation = conj; ^ {relation = advmod} -> \P.\F.P(\E(([X], [DUMMY_ADV(X), advmod(E,X)]) + F(E))) : (x(^ ^) -o x(^ ^))
+# nmods
+relation = conj; ^ {relation = nmod} -> \P.\X.(([Y],[DUMMY_NOUN(Y), nmod(X,Y)]) + P(X)) : (@et(^ ^) -o @et(^ ^))
+# nmod:poss
+relation = conj; ^ {relation = nmod:poss} -> \P.\X.(([Y],[DUMMY_NOUN(Y), poss(X,Y)]) + P(X)) : (@et(^ ^) -o @et(^ ^))
+# advcls
+relation = conj; ^ {relation = advcl} -> \V.\F.(V(\E.(([X], [DUMMY_ADVCL(E,X)]) + F(E)))) : (x(^ ^) -o x(^ ^))
+# obls
+relation = conj; ! {relation = case}; ^ {relation = obl} -> \V.\F.(V(\E.(([X], [obl(E,X), DUMMY(X)]) + F(E)))) : (x(^ ^) -o x(^ ^))
+# NPs
+# coarsePos = (PROPN|NOUN|PRON); relation = conj; ~ ! case {}; ^ { relation = @CORE-NOMINAL-REL } -> \P.\X.(([Z],[DUMMY(Z), Sub(X,Z)]) + P(X)) : (@et(%C) -o @et(%C))

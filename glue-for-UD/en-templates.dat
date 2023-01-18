@@ -1,0 +1,13 @@
+@FUTURE-AUX 0 = will
+
+@DEFINITE-DET 0 = (the|this|that)
+
+@INDEFINITE-DET 0 = (a|some)
+
+@UNIVERSAL-QUANTIFIER 0 = every
+
+@INF-MARK 0 = to
+
+@CONJUNCTION 0 = and
+
+@DISJUNCTION 0 = or

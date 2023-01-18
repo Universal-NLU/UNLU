@@ -1,0 +1,1111 @@
+#+TITLE: Rules for UNLU pipeline
+#+PROPERTY: header-args:unlu-rules :tangle rules.dat
+
+* Notes on formatting etc.
+** Format of the rules
+Rules have the following format: ~CONDITION -> MEANING CONSTRUCTOR~.
+
+~CONDITION~ is a true or false statement describing properties of a UD node, e.g.
+stating that its =relation = nsubj= or that it bears the feature =Polarity = Neg=.
+These can also be complex conditions describing distant nodes, using =!= for the
+current node and =^= for its mother (the latter can be iterated: =^^= describes the
+grandmother of the node being described).
+
+~MEANING CONSTRUCTOR~ is a Glue Semantics meaning constructor written in the NLTK
+lambda-DRS format.
+
+** Structure of this file
+Within the RULES section, we have attempted to group things by major themes
+(e.g. coordination, gapped constructions, then basic relations at the end), and
+then logical divisions within there. We have left basic relations to the end on
+the basis that these are the sorts of rules which should fire if nothing more
+specific has applied, but of course specific phenomena may require reorderings
+that mess up this structure.
+
+** Local names
+For now we require that local names are separated from their definition by " = "
+-- the surrounding spaces are significant! They distinguish this equals sign
+from equals signs inside the functional uncertainty (which must *not* be separated
+with spaces. This is a hack.
+
+** Using org-babel
+=org-babel= will extract code blocks from this file and create the requisite ~.dat~
+files. At present, all =unlu-rules= blocks are by default tangled to
+=tangled-rules.dat=. Blocks which define templates must be manually specified to
+tangle to =templates.dat= with the statement ~:tangle tangled-templates.dat~
+at the start of the block.
+
+* Language-specific templates
+A list of lemmas we need for certain rules.
+** Future auxiliary words:
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@FUTURE-AUX 0 = will
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@FUTURE-AUX 0 = werden
+#+end_src
+
+Italian:
+We use =æøå= to make sure this should never be matched. since Italian has no such auxiliary.
+#+begin_src unlu-rules :tangle it-templates.dat
+@FUTURE-AUX 0 = æøå
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@FUTURE-AUX 0 = zullen
+#+end_src
+
+** Definite determiners
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@DEFINITE-DET 0 = (the|this|that)
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@DEFINITE-DET 0 = (der|dies)
+#+end_src
+
+Italian:
+#+begin_src unlu-rules :tangle it-templates.dat
+@DEFINITE-DET 0 = (il|questo|quello)
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@DEFINITE-DET 0 = (het|de|dit|deze|dat|die)
+#+end_src
+
+** Indefinite determiners
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@INDEFINITE-DET 0 = (a|some)
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@INDEFINITE-DET 0 = (ein|einige)
+#+end_src
+
+Italian (/some/ 'delle' is parsed as =di+il= so will presumably get some kind of definite interpretation ...?):
+#+begin_src unlu-rules :tangle it-templates.dat
+@INDEFINITE-DET 0 = uno
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@INDEFINITE-DET 0 = (een|wat)
+#+end_src
+
+** Universal quantifiers
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@UNIVERSAL-QUANTIFIER 0 = every
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@UNIVERSAL-QUANTIFIER 0 = jed
+#+end_src
+
+Italian:
+#+begin_src unlu-rules :tangle it-templates.dat
+@UNIVERSAL-QUANTIFIER 0 = ogni
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@UNIVERSAL-QUANTIFIER 0 = elk
+#+end_src
+
+** Infinitival markers
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@INF-MARK 0 = to
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@INF-MARK 0 = zu
+#+end_src
+
+Italian. Seems to be mostly 'di' but also 'a' in e.g. 'penso a mangiare'(?)
+#+begin_src unlu-rules :tangle it-templates.dat
+@INF-MARK 0 = (di|a)
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@INF-MARK 0 = te
+#+end_src
+** Coordination
+*** Conjunction
+Default (i.e. if we don't have a language file for this language) -- match anything (i.e. make everything conjunction):
+#+begin_src unlu-rules :tangle universal-templates.dat
+@CONJUNCTION 0 = .*
+#+end_src
+
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@CONJUNCTION 0 = and
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@CONJUNCTION 0 = und
+#+end_src
+
+Italian:
+#+begin_src unlu-rules :tangle it-templates.dat
+@CONJUNCTION 0 = e
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@CONJUNCTION 0 = en
+#+end_src
+
+*** Disjunction
+Default -- match nothing (since we treat every coordination as a conjunction):
+#+begin_src unlu-rules :tangle universal-templates.dat
+@DISJUNCTION 0 = æøå
+#+end_src
+
+English:
+#+begin_src unlu-rules :tangle en-templates.dat
+@DISJUNCTION 0 = or
+#+end_src
+
+German:
+#+begin_src unlu-rules :tangle de-templates.dat
+@DISJUNCTION 0 = oder
+#+end_src
+
+Italian:
+#+begin_src unlu-rules :tangle it-templates.dat
+@DISJUNCTION 0 = o
+#+end_src
+
+Dutch:
+#+begin_src unlu-rules :tangle nl-templates.dat
+@DISJUNCTION 0 = of
+#+end_src
+* High-level templates
+These templates are used in several different rules and aren't about
+implementing an analysis of one or two specific phenomena.
+** Abbreviating disjunctions of UD relations
+*** Clausal relations
+We often want to talk about all clausal relations (except the root), so this
+saves us repeating ourselves:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@CLAUSAL-REL 0 = (xcomp|ccomp|acl|advcl|csubj)
+#+end_src
+*** Core arguments
+Non-oblique argument relations, nominals:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@CORE-NOMINAL-REL 0 = (nsubj|obj|iobj)
+#+end_src
+
+And clausal:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@CORE-CLAUSAL-REL 0 = (csubj|ccomp|xcomp)
+#+end_src
+
+And combined:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@CORE-REL 0 = ( @CORE-NOMINAL-REL | @CORE-CLAUSAL-REL )
+#+end_src
+
+** Type templates
+To make our meaning constructors slightly easier to read we abbreviate some
+common linear logic types:
+*** Nominal type
+The =<e,t>= type of nouns:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@et 1 = (e(#1) -o t(#1))
+#+end_src
+*** Quantifier type
+The =<<e,t>,t>= type of generalised quantifiers (using our =p= for =t= fudge). The
+first argument is the restrictor; the second, the scope:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@quant 2 = ((e(#1) -o p(#2)) -o p(#2))
+#+end_src
+
+* Rules
+** Stop rules
+Stop rules cause further processing of the node in question and all its
+descendants to be cancelled.
+
+We use these initial rules to totally ignore phrases for which we either have no
+analysis at present, or for which we think no semantic contribution is required
+(at the level of detail we are currently working).
+
+#+begin_src unlu-rules
+relation = parataxis -> STOP
+relation = expl -> STOP
+relation = dislocated -> STOP
+relation = discourse -> STOP
+relation = vocative -> STOP
+#+end_src
+
+** Ignored relations
+These rules cancel further processing of the node in question, but not the whole
+sub-tree which it anchors.
+*** flat
+We ignore =flat= since =ud2drs= collects the words related by =flat= and makes them
+part of the lemma.
+#+begin_src unlu-rules
+relation = flat ->
+#+end_src
+
+** Gaps
+Handling gapped arguments. This uses a template =@gap-type-verbal-dep=, defined as
+follows:
+
+A meaning side which adds a new dependent to a verbal meaning, whose relation is
+passed to the template as an arugment:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@gap-type-verbal-dep-mng 1 = \V.\X.\F.V(\E.(([], [#1(E,X)]) + F(E)))
+#+end_src
+
+The Glue side reflects this: we take a verbal type and add an =e=-type dependency
+(the address of the verb and the dependent are the two arguments):
+#+begin_src unlu-rules :tangle universal-templates.dat
+@gap-type-verbal-dep-type 2 = (x(#2) -o (e(#1) -o x(#2)))
+#+end_src
+
+These are then combined:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@gap-type-verbal-dep 1 = @gap-type-verbal-dep-mng(#1) : @gap-type-verbal-dep-type("!" "^")
+#+end_src
+
+We use the relation of the relative pronoun and pass that to the template. This
+turns the verb into a function missing a type e argument, which is exploited by
+the =acl:relcl= rule below.
+
+#+begin_src unlu-rules
+relation = nsubj; PronType=Rel -> @gap-type-verbal-dep(nsubj^)
+relation = nsubj:pass; PronType=Rel -> @gap-type-verbal-dep(nsubj_pass^)
+relation = obj; PronType=Rel -> @gap-type-verbal-dep(obj^)
+relation = iobj; PronType=Rel -> @gap-type-verbal-dep(iobj^)
+relation = gf; PronType=Rel -> @gap-type-verbal-dep(gf^)
+relation = nmod:poss; PronType=Rel -> \X.\P.\Y.(([], [poss*(X,Y)]) + P(Y)) : (e(!) -o (@et(^) -o @et(^)))
+PronType=Rel ->
+#+end_src
+
+** Negation
+The treatment of negation is limited at present.
+
+There is another rule for =ccomp= negation under [[*ccomp][that relation]].
+
+Define templates for referring to negative and positive nodes, i.e. the feature
+assignment =Polarity = Neg=, and its absence:
+
+Checking a node is marked as negative polarity:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@NEGATIVE 0 = Polarity=Neg
+#+end_src
+
+Checking a node is not marked as negative polarity:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@AFFIRMATIVE 0 = Polarity!=Neg
+#+end_src
+
+The presence of a negative =advmod= triggers negation of its host:
+#+begin_src unlu-rules
+relation = advmod; @NEGATIVE -> \P.(-P) : p(^) -o p(^)
+#+end_src
+
+Note: this doesn't allow negative concord, since each such negative-marked adverbial will add a new negation. To handle NC, we check from the perspective of the =root= not the =advmod=. This needs to be parametrised in language-specific rule files.
+
+#+begin_src unlu-rules
+# relation = root; advmod { @NEGATIVE } -> \P.(-P) : p(!) -o p(!)
+#+end_src
+
+** Coordination
+This whole set up should be looked at/refactorised/made to incorporate the
+meaning of the =cc= dependent, etc.
+
+No dependents are propagated at present.
+
+*** Root and ccomp coordination
+Should we specify the condition positively rather than negatively? Only roots
+and ccomps, perhaps?
+
+#+begin_src unlu-rules
+relation = conj; coarsePos = VERB; ~ ^ {relation = amod}; ~ ^ {relation = xcomp}; ~ ^ {relation = advcl} -> \V.\U.\F.(U(F) + V(\G.([],[]))) : x(!) -o x(^) -o x(^)
+
+relation = conj; coarsePos = ADJ; ~ ^ {relation = amod} -> \V.\U.\F.(U(F) + V(\G.([],[]))) : x(!) -o x(^) -o x(^)
+
+relation = conj; coarsePos = NOUN; ^ {relation = root}; ^ nsubj {  } -> \V.\U.\F.(U(F) + V(\G.([],[]))) : x(!) -o x(^) -o x(^)
+#+end_src
+
+*** xcomp coordination
+=xcomp=-type conjuncts add the same kind of dependency as regular =xcomp=​s:
+#+begin_src unlu-rules
+relation = conj; coarsePos = VERB; ~ nsubj {}; ^ {relation = xcomp} -> \V.\X.\E.(V(\E1.(([],[xcomp(E,E1), nsubj(E1,X)])))) : x(!) -o (e(!) -o v(!) -o t(!))
+#+end_src
+
+But also add a meaning constructor to combine this with the head =xcomp='s
+meaning, which then gets hooked up to the main clause by the second rule in the
+[[*xcomp][xcomp]] section:
+#+begin_src unlu-rules
+relation = conj; coarsePos = VERB; ~ nsubj {}; ^ {relation = xcomp} -> \P.\Q.\X.\E.(P(X)(E)+Q(X)(E)) : (e(!) -o v(!) -o t(!)) -o (e(^) -o v(^) -o t(^)) -o e(^) -o v(^) -o t(^)
+#+end_src
+
+*** advcl coordination
+Conjoined =advcl=​s that have their own =mark= introduce their own condition:
+#+begin_src unlu-rules
+relation = mark; ^ {relation = conj}; ^ ^ {relation = advcl} -> \U.\V.\F.V(\E.(([], [:LEMMA:(E, U(\G.([],[])))]) + F(E))) : x(^) -o x(^ ^ ^) -o x(^ ^ ^)
+#+end_src
+
+Conjoined =advcl=​s that don't have their own =mark= share their mother's:
+#+begin_src unlu-rules
+relation = conj; ~ mark { }; ^ {relation = advcl} -> \U.\V.\F.V(\E.(([], [advcl(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^ ^) -o x(^ ^)
+#+end_src
+
+*** amod coordination
+As with regular =amod= dependents, this adds the PMB =Attribute= relation.
+#+begin_src unlu-rules
+relation = conj; ^ {relation = amod} -> \V.\P.\X.(V(\E.([],[Attribute*(X,E)])) + P(X)) : (x(!) -o (@et(^ ^) -o @et(^ ^)))
+#+end_src
+
+*** nmod coordination
+**** Without case
+We use =nmod= as the relation.
+
+#+begin_src unlu-rules
+relation = conj; ^ {relation = nmod}; ~ case { } -> \Q.\P.\X.((Q(\Y.([], [nmod*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^ ^) -o @et(^ ^)))
+#+end_src
+
+**** With case
+We use the preposition/case-marker's lemma as the relation.
+
+#+begin_src unlu-rules
+relation = case; ^ {relation = conj};  ^ ^ {relation = nmod} -> \Q.\P.\X.((Q(\Y.([], [:LEMMA:*(X,Y)] ))) + P(X)) : (@quant("^" "^ ^") -o (@et(^ ^ ^) -o @et(^ ^ ^)))
+#+end_src
+
+**** nmod:poss
+=nmod:poss= is special, so we ignore the casemarker if there is one:
+
+#+begin_src unlu-rules
+relation = case; ^ {relation = conj}; ^ ^ {relation = nmod:poss} ->
+#+end_src
+
+and we use the =nmod:poss= relation regardless:
+
+#+begin_src unlu-rules
+relation = conj; ^ {relation = nmod:poss} -> \Q.\P.\X.((Q(\Y.([], [poss*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^ ^) -o @et(^ ^)))
+#+end_src
+
+*** advmod coordination
+**** Clausal interrogative advmod
+#+begin_src unlu-rules
+relation = conj; ^ {relation = advmod}; ! {PronType=Int}; ~ ^ ^ {relation = (amod|advmod)} -> \P.\F.P(\E(([X], [:INTR:*(X), EQ*(X, `?`), :LEMMA:*(E,X)]) + F(E))) : (x(^ ^) -o x(^ ^))
+#+end_src
+
+**** Complex interrogative advmod ('How often ...'? etc.)
+#+begin_src unlu-rules
+relation = conj; ^ {relation = advmod}; !{PronType=Int}; ^ ^ {relation = (amod|advmod)} -> \P.\X.(([Y],[:INTR:*(Y), EQ*(Y, `?`), :LEMMA:*(X,Y)]) + P(X)) : (v(^ ^) -o t(^ ^)) -o v(^ ^) -o t(^ ^)
+#+end_src
+
+**** Basic advmod meaning
+#+begin_src unlu-rules
+relation = conj; ^ {relation = advmod}; ~ ! {PronType=Int} -> \X.(([],[:INTR:*(X), :LEMMA:*(X)])) : v(!) -o t(!)
+#+end_src
+
+Using basic meaning to modify a clause
+#+begin_src unlu-rules
+relation = conj; ^ {relation = advmod}; ~ ! {PronType=Int}; ~ ^ ^ {relation = (amod|advmod)} ->  \Q.\P.\F.P(\E(([X], [advmod*(E,X)]) + F(E) + Q(X))) : (v(!) -o t(!)) -o (x(^ ^) -o x(^ ^))
+#+end_src
+
+Using basic meaning to modify another adverbial
+#+begin_src unlu-rules
+relation = conj; ^ {relation = advmod}; ~ ! {PronType=Int}; ^ ^ {relation = (amod|advmod)} -> \Q.\P.\X.(([Y],[:INTR:*(Y), :LEMMA:*(Y), advmod*(X,Y)]) + P(X) + Q(X)) : (v(!) -o t(!)) -o (v(^ ^) -o t(^ ^)) -o v(^ ^) -o t(^ ^)
+#+end_src
+
+*** obl coordination
+We use a separate =obl= relation even when there is a shared adpositional head (e.g. /I went [to [Rome and Paris]]/) -- *EXCEPT* where the shared noun is the daughter of a =conj= rather than the top =obl=, i.e. daisy-chain rather than bouquet arrangement (e.g. /Indy fights Nazis on a horse and with a whip and a gun/ ); then we get the collective reading of the grouped nouns (though this isn't currently working)
+
+***** Without case
+Use the generic =obl= label for the relation:
+
+#+begin_src unlu-rules
+relation = conj; ^ {relation = obl.*}; ~ case { } -> @e-type-verbal-dep-mng(obl) : @e-type-verbal-dep-type("!" "%h" "^ ^") : %h = ^
+#+end_src
+
+***** With case (normally = preposition)
+Use the case-marker's lemma as the relation label:
+
+#+begin_src unlu-rules
+relation = case; ^ {relation = conj}; ^ ^ {relation = obl.*} -> @e-type-verbal-dep-mng(:LEMMA:) : @e-type-verbal-dep-type("^" "%h" "^ ^ ^") : %h = ^ ^
+#+end_src
+
+***** TODO fix approach to obl-coord-mix-1-2
+
+*** NP coordination
+**** Conjunction
+We assume a collective reading.
+
+Note on the scope of the =quant= templates: if we want to implement variable scope
+points/no chopping, the scope must be =%R= for proper nouns but not common nouns,
+so the rules should all be duplicated, with one for =PROPN= and one for =NOUN=.
+Collapsed for now as they're work in progress and it's easier to change one rule
+than two ...
+
+***** The head noun provides the overall GQ meaning.
+One rule for argument nominals. It checks if this node is a noun or pronoun, if it has at least one =conj= daughter with a conjunction (rather than disjunction) =cc= dependent, that it has no PP =conj= dependents (i.e. ones which themselves have a =case= dependent), and that the relation of this node is a core nominal one. It then contributes an entity =X= of which all of the conjuncts will be =Sub= entities.
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); ! conj cc{lemma = @CONJUNCTION }; ~ ! conj case { }; relation = @CORE-NOMINAL-REL -> \R.\S.(([X],[:INTR:{conj cc}(X), entity(X)]) + R(X) + S(X)) : @et(%C) -o @quant("!" "^")
+#+end_src
+
+A rule for headings -- no subject or copula, and ~relation = root~. The reason we need this rule is just because we can't do complex embededded disjunctions/conjunctions in rule conditions(?) -- that is, we want to say that the noun is either a core nominal relation OR (it's a root AND doesn't have a subject or copula, i.e. isn't predicative).
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); ! conj cc{lemma = @CONJUNCTION }; ~ ! conj case { }; relation = root; ~ ! nsubj {  }; ~ ! cop { } -> \R.\S.(([X],[:INTR:{conj cc}(X), entity(X)]) + R(X) + S(X)) : @et(%C) -o @quant("!" "^")
+#+end_src
+
+***** The head noun provides a 'seed' meaning to be modified, making it a sub part of some entity
+For arguments:
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); ! conj cc {lemma = @CONJUNCTION }; ~ ! conj case { }; relation = @CORE-NOMINAL-REL -> \Q.\X.(Q(\Z.(([],[Sub{conj cc}(X,Z)])))) : @quant("!" "^") -o @et(%C)
+#+end_src
+
+For headings:
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); ! conj cc {lemma = @CONJUNCTION }; ~ ! conj case { }; relation = root; ~ ! nsubj {  }; ~ ! cop { } -> \Q.\X.(Q(\Z.(([],[Sub{conj cc}(X,Z)])))) : @quant("!" "^") -o @et(%C)
+#+end_src
+
+***** Other conjuncts modify this while also being added as sub parts
+For arguments:
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); relation = conj; ^ conj cc {lemma = @CONJUNCTION }; ~ ! case {}; ^ { relation = @CORE-NOMINAL-REL } -> \Q.\P.\X.(Q(\Z.(([],[Sub{^ conj cc}(X,Z)]))) + P(X)) : @quant("!" "^") -o (@et(%C) -o @et(%C))
+#+end_src
+
+For headings:
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); relation = conj; ^ conj cc {lemma = @CONJUNCTION }; ~ ! case {}; ^ { relation = root }; ~ ^ nsubj { }; ~ ^ cop { } -> \Q.\P.\X.(Q(\Z.(([],[Sub{^ conj cc}(X,Z)]))) + P(X)) : @quant("!" "^") -o (@et(%C) -o @et(%C))
+#+end_src
+
+**** Disjunction
+For arguments:
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN|PRON); relation = conj; ^ conj cc {lemma = @DISJUNCTION }; ~ ! case {}; ^ { relation = @CORE-NOMINAL-REL } -> \Q1.\Q2.\P.(([Y], [Q1(\X.(([],[X=Y]))) | Q2(\Z.(([],[Z=Y])))]) + P(Y)) : @quant("^" "^ ^") -o @quant("!" "^") -o @quant("^" "^ ^")
+#+end_src
+
+** POS-specific rules
+Rules which relate to nodes with a particular part of speech tag rather than a
+particular UD relation.
+*** Verbs
+Verbs introduce a <<v,t>,t> type, Champollion-style meaning (we abbreviate this
+complex type as =x=):
+
+#+begin_src unlu-rules
+coarsePos = VERB -> \F.(([E],[:INTR:*(E), :LEMMA:(E)]) + F(E) ) : x(!)
+#+end_src
+
+**** Tense
+There is a =time(x)=, it bears the =Time(e,x)= relation to its verb, and it has some
+temporal property: =t = `now`= OR =TPR t `now`= OR =TPR `now` t=. We capture this in
+some templates.
+
+***** Tense templates
+The wordnet sense of =time= is always =n.08= but since we don't
+capture other WN senses we omit that for now.
+
+Present tense:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@PRES-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), EQ*(#1, `now`)])), Time*(#2,#1)]))
+#+end_src
+
+Past tense:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@PAST-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(#1, `now`)])), Time*(#2,#1)]))
+#+end_src
+
+Future tense:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@FUT-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(`now`,#1)])), Time*(#2,#1)]))
+#+end_src
+
+=IMP= and =PQP= are simply treated as identical to =PAST= for now, but we include
+separate templates so they can be altered easily later.
+
+Imperfect 'tense':
+#+begin_src unlu-rules :tangle universal-templates.dat
+@IMP-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(#1, `now`)])), Time*(#2,#1)]))
+#+end_src
+
+Pluperfect 'tense':
+#+begin_src unlu-rules :tangle universal-templates.dat
+@PQP-DRS 2 = (([],[PRESUPPOSITION(([#1],[:INTR:*(#1), time*(#1), TPR*(#1, `now`)])), Time*(#2,#1)]))
+#+end_src
+
+Ideally we would use a more modular =@TENSE-DRS= template, as below, but nested
+parentheses in template calls are not possible yet, so this remains work in
+progress.
+
+#+begin_src unlu-rules :tangle universal-templates.dat
+# @TENSE-DRS 3 = ([#1],[time(#1), Time(#2,#1), #3])
+# @PRES-DRS 2 = @TENSE-DRS("#1" "#2" "EQU(#1,`now`)")
+# @PAST-DRS 2 = @TENSE-DRS("#1" "#2" "TPR(#1,`now`)")
+# @FUT-DRS 2 = @TENSE-DRS("#1" "#2" "TPR(`now`,#1)")
+#+end_src
+
+***** Tense rules
+These rules just look at the verb's features; many languages are more complex
+and use auxiliaries, so that the features on the verb don't properly represent
+the semantic tense. However, in the absence of any auxiliaries, the verb's =Tense= feature seems to be reliable.
+
+Past tense:
+#+begin_src unlu-rules
+coarsePos = VERB; ~ aux; Tense=Past -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+#+end_src
+
+Present tense:
+#+begin_src unlu-rules
+coarsePos = VERB; ~ aux; Tense=Pres -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+#+end_src
+
+Future tense:
+#+begin_src unlu-rules
+coarsePos = VERB; ~ aux; Tense=Fut -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+#+end_src
+
+Imperfect 'tense':
+#+begin_src unlu-rules
+coarsePos = VERB; ~ aux; Tense=Imp -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+#+end_src
+
+Pluperfect 'tense':
+#+begin_src unlu-rules
+coarsePos = VERB; ~ aux; Tense=Pqp -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+#+end_src
+*** Nouns
+Common nouns and proper nouns both introduce a type <e,t> meaning:
+
+#+begin_src unlu-rules
+coarsePos = NOUN -> \X.([],[:LEMMA:(X) ] ) : @et(!)
+coarsePos = PROPN -> \X.([], [Name(X, `:LEMMA:`)]) : @et(!)
+#+end_src
+
+**** Nouns as clausal heads
+At present we identify this by whether they have an =nsubj= or =cop= dependent.
+
+Each rule introduces an implicit /be/-event, as per PMB standards.
+
+This meaning constructor closes it off:
+
+We also make sure any quantifier on the predicate noun targets this event, with the following rule:
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN); relation = (root|@CLAUSAL-REL ); ! (nsubj|cop) { } -> \V.(V(\F.( [],[] ))) : (x(!) -o p(!))
+#+end_src
+
+***** Predicate nominals
+****** As a root
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN); relation = root ; ~ ! gf {coarsePos = ADP}; ! (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [be{cop}(E), Co_Theme(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+#+end_src
+
+****** As a conjunct
+******* Under the root
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN); relation = conj ; ^ {relation = root}; ~ ! gf {coarsePos = ADP}; ^ (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [be{cop}(E), Co_Theme(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+#+end_src
+
+******* Under other clausal dependents
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN); relation = conj; ^ {relation = @CLAUSAL-REL }; ~ ! gf {coarsePos = ADP} -> \Q.\F.(Q(\X.(([E], [be{^ cop}(E), Co_Theme{^ cop}(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+#+end_src
+
+****** In a clausal complement
+#+begin_src unlu-rules
+coarsePos = (PROPN|NOUN); relation = @CLAUSAL-REL ; ~ ! gf {coarsePos = ADP} -> \Q.\F.(Q(\X.(([E], [be{cop}(E), Co_Theme(E,X)]) + F(E)))) : (@quant("!" "^") -o x(!))
+#+end_src
+
+***** Predicate PPs
+****** As a root
+#+begin_src unlu-rules
+coarsePos = ADP; ^ {relation = root}; ^ {coarsePos = (PROPN|NOUN)}; ^ (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [:INTR:{^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+#+end_src
+
+****** As a conjunct
+******* Under the root
+#+begin_src unlu-rules
+coarsePos = ADP; ^ {relation = conj}; ^ {coarsePos = (PROPN|NOUN)}; ^ ^ {relation = root}; ^ ^ (nsubj|cop) { } -> \Q.\F.(Q(\X.(([E], [:INTR:{^ ^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+#+end_src
+
+******* Under other clausal dependents
+#+begin_src unlu-rules
+coarsePos = ADP; ^ {relation = conj}; ^ {coarsePos = (PROPN|NOUN)}; ^ ^ {relation = @CLAUSAL-REL } -> \Q.\F.(Q(\X.(([E], [:INTR:{^ ^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+#+end_src
+
+****** In a clausal complement
+#+begin_src unlu-rules
+coarsePos = ADP; ^ {relation = @CLAUSAL-REL }; ^ {coarsePos = (PROPN|NOUN)} -> \Q.\F.(Q(\X.(([E], [:INTR:{^ cop}(E), be(E), :LEMMA:*(E,X)]) + F(E)))) : (@quant("^" "^ ^") -o x(^))
+#+end_src
+*** Adjectives
+Adjectives which are treated as core relations need to be treated like nouns:
+#+begin_src unlu-rules
+coarsePos = ADJ; relation=(nsubj|obj|iobj|obl.*) -> \X.([], [:LEMMA:(X)]) : @et(!)
+#+end_src
+
+And if they don't have their own determiner, we give them a default existential one:
+#+begin_src unlu-rules
+coarsePos = ADJ; relation=(nsubj|obj|iobj|obl.*); ~ det { } -> \P.\Q.(([X],[:INTR:*(X) ]) + P(X) + Q(X) ) : (@et(!) -o @quant("!" "^"))
+#+end_src
+
+In general, adjectives introduce states. When the adjective is an =amod= (or the
+daughter of one, i.e. in a coordinate structure), then it does not, since we
+have a separate rule to handle modifier rather than predicative uses of
+adjectives.
+#+begin_src unlu-rules
+coarsePos = ADJ; ~ relation = amod; ~ ^ {relation = amod} -> \F.(([S], [:INTR:*(S), :LEMMA:*(S)]) + F(S)) : x(!)
+#+end_src
+
+We provide a closure operator for that state when the adjective is the root. For
+subordinated or coordinated adjectives something else will do this.
+#+begin_src unlu-rules
+coarsePos = ADJ; relation = root -> \V.(V(\F.( [],[] ))) : (x(!) -o p(!))
+#+end_src
+
+*** Pronouns
+**** 1st person
+Singular
+#+begin_src unlu-rules
+coarsePos = PRON; Person=1; Number=Sing -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`speaker`)]) + P(X)) : @quant("!" "^")
+#+end_src
+
+Plural
+#+begin_src unlu-rules
+coarsePos = PRON; Person=1; Number=Plur -> \P.(([X,Y], [:INTR:*(X), person*(X), Sub*(X,`speaker`)]) + P(X)) : @quant("!" "^")
+#+end_src
+
+Neither
+#+begin_src unlu-rules
+coarsePos = PRON; Person=1; ~ Number=Sing; ~ Number=Plur -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`speaker`)]) + P(X)) : @quant("!" "^")
+#+end_src
+
+**** 2nd person
+Singular
+#+begin_src unlu-rules
+coarsePos = PRON; Person=2; Number=Sing -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`hearer`)]) + P(X)) : @quant("!" "^")
+#+end_src
+
+Plural
+#+begin_src unlu-rules
+coarsePos = PRON; Person=2; Number=Plur -> \P.(([X,Y], [:INTR:*(X), person*(X), Sub*(X,`hearer`)]) + P(X)) : @quant("!" "^")
+#+end_src
+
+Neither
+#+begin_src unlu-rules
+coarsePos = PRON; Person=2; ~ Number=Sing; ~ Number=Plur -> \P.(([X], [:INTR:*(X), person*(X), EQ*(X,`hearer`)]) + P(X)) : @quant("!" "^")
+#+end_src
+
+**** 3rd person
+All singular at the moment since the PMB only represents plurality for 1st/2nd pronouns.
+
+No gender -- using this as the default since the =Gender= feature is used for syntactic gender, not just semantic. But for English/other languages which lack grammatical gender, we can assume =Gender= features are semantic(?)
+#+begin_src unlu-rules
+coarsePos = PRON; ~ Person=1; ~ Person=2 -> \P.(([],[PRESUPPOSITION(([X], [:INTR:*(X),entity*(X)]))]) + P(X)) : @quant("!" "^")
+#+end_src
+
+Masculine
+#+begin_src unlu-rules
+# coarsePos = PRON; ~ Person=1; ~ Person=2; Gender=Masc -> \P.(([],[PRESUPPOSITION(([X], [:INTR:*(X), male*(X)]))]) + P(X)) : @quant("!" "^")
+#+end_src
+
+Feminine
+#+begin_src unlu-rules
+# coarsePos = PRON; ~ Person=1; ~ Person=2; Gender=Fem -> \P.(([],[PRESUPPOSITION(([X], [:INTR:*(X), female*(X)]))]) + P(X)) : @quant("!" "^")
+#+end_src
+** Basic relations
+*** root
+**** Verbal roots
+A meaning constructor to close off the =<<v,t>,t>= dependency of our verbal type =x=:
+#+begin_src unlu-rules
+relation = root, coarsePos = VERB -> \V.(V(\E.( [],[] ))) : (x(!) -o p(!))
+#+end_src
+
+**** Nominal roots
+The rule under [[*Nouns as clausal heads]] closes off the =<<v,t>,t>= dependency of
+the noun with type =x= when it is a predicate. We use the following rule for
+standalone NPs (e.g. headings); it creates a generic event and makes the NP a
+participant in it, as per PMB:
+#+begin_src unlu-rules
+relation = root; coarsePos = (PROPN|NOUN); ~ nsubj { }; ~ cop { } -> \X.([E],[event(E), Participant(E,X)]) : (e(!) -o p(^))
+#+end_src
+
+*** Argument relations
+**** Argument relation templates
+We use some templates to make the rules more readable:
+
+Firstly, we define the meaning contribution of a type =e= dependency. It looks for
+a quantifier (the argument) then applies that to the verb while adding a
+relation whose name we pass to the template as an argument. We have another
+template for where the order of arguments is reversed:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@e-type-verbal-dep-mng 1 = \Q.\V.\F.(Q(\X.(V(\E.(([], [#1(E,X)]) + F(E))))))
+@e-type-verbal-dep-mng-inverse 1 = \Q.\V.\F.(Q(\X.(V(\E.(([], [#1(X,E)]) + F(E))))))
+#+end_src
+
+Secondly, we define the linear logic type, which is the same for both.
+#+begin_src unlu-rules :tangle universal-templates.dat
+@e-type-verbal-dep-type 3 = (@quant("#1" "#2") -o (x(#3) -o x(#3)))
+#+end_src
+
+Lastly, we define the full templates for use in the rules:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@e-type-verbal-dep 1 = @e-type-verbal-dep-mng(#1) : @e-type-verbal-dep-type("!" "%h" "^")
+@e-type-verbal-dep-inverse 1 = @e-type-verbal-dep-mng-inverse(#1) : @e-type-verbal-dep-type("!" "%h" "^")
+#+end_src
+
+We also add a template to control the quantifier scope in one place. We use this
+for constraining scope. If we set it more loosely, we capture more genuine
+ambiguities, but we get a lot of spurious ones too. For now we set it
+restrictively.
+
+We have one template for the argument-adding rules -- currently arguments cannot
+scope outside of their clause (=^=):
+#+begin_src unlu-rules :tangle universal-templates.dat
+@arg-scope 0 = ^
+#+end_src
+
+And another for the determiners (also limited to their clause, but with an extra
+=^= since they are one step more embedded already):
+#+begin_src unlu-rules :tangle universal-templates.dat
+@det-scope 0 = ^ ^
+#+end_src
+
+**** nsubj
+The nominal subject of a verb (active or passive):
+#+begin_src unlu-rules
+relation = nsubj; ^ {coarsePos=VERB} -> @e-type-verbal-dep(nsubj^) : %h = @arg-scope
+relation = nsubj:pass -> @e-type-verbal-dep(nsubj_pass^) : %h = @arg-scope
+#+end_src
+
+The nominal subject of a predicate nominal:
+#+begin_src unlu-rules
+relation = nsubj; ^ {coarsePos=(PROPN|NOUN)} -> @e-type-verbal-dep(Theme{^ cop}) : %h = @arg-scope
+#+end_src
+
+The nominal subject of a predicate adjective:
+#+begin_src unlu-rules
+relation = nsubj; ^ {coarsePos=ADJ} -> @e-type-verbal-dep-inverse(Attribute^) : %h = @arg-scope
+#+end_src
+**** obj
+Treat all =obj=​s the same:
+#+begin_src unlu-rules
+relation = obj -> @e-type-verbal-dep(obj^) : %h = @arg-scope
+#+end_src
+
+**** iobj
+Treat all =iobj=​s the same:
+#+begin_src unlu-rules
+relation = iobj -> @e-type-verbal-dep(iobj^) : %h = @arg-scope
+#+end_src
+
+**** obl
+For =obl=, we want the relation to be given by the =case= dependent, if there is
+one. =case= is almost always a dependent of either an =obl=-dependent of a verb or
+an =nmod=-dependent of a noun. As a special case of the latter, the head is
+sometimes an =nmod:poss= dependent, in which case we want =poss= to override the
+relation contributed by the =case=-dependent. Another case we probably want to
+deal with is when the head is an =obl=-dependent of an adjective rather than a
+verb.
+
+Basic strategy: =obl= and =nmod= check if there is a case dependent. If there is,
+defer to that and have no meaning of their own. =nmod:poss=, on the other hand,
+will overrule any =case= dependent.
+
+#+begin_src unlu-rules
+relation = obl.*; ~ case { }; ~ relation = obl:tmod -> @e-type-verbal-dep(obl^) : %h = @arg-scope
+relation = case; ^ {relation = obl.*}; ~ ^{relation = obl:tmod} -> @e-type-verbal-dep-mng(:LEMMA:) : @e-type-verbal-dep-type("^" "%h" "^ ^") : %h = ^ ^
+#+end_src
+
+Special case: =obl:tmod= here we modify the time of the main event:
+#+begin_src unlu-rules
+relation = obl:tmod; ~ case { } -> @e-type-verbal-dep(Time^) : %h = @arg-scope
+#+end_src
+**** gf
+=gf= is inserted by =ud2drs= as a completely underspecified relation.
+#+begin_src unlu-rules
+relation = gf -> @e-type-verbal-dep(gf^) : %h = @arg-scope
+#+end_src
+*** Clausal relations
+**** csubj
+#+begin_src unlu-rules
+relation = csubj ->  \U.\V.\F.V(\E.(([], [csubj^(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+#+end_src
+
+**** ccomp
+Use straight =ccomp= if there is no =mark=, otherwise, see [[*mark][mark]] section.
+
+Here we have two rules: if the =ccomp= has a negative =advmod= we negate the clausal
+meaning (the ~-U~ in the meaning); otherwsie we don't.
+#+begin_src unlu-rules
+relation = ccomp; ~ mark { }; advmod { @NEGATIVE } ->  \U.\V.\F.V(\E.(([], [ccomp^(E, -U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+relation = ccomp; ~ mark { }; ~ advmod { @NEGATIVE } ->  \U.\V.\F.V(\E.(([], [ccomp^(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+#+end_src
+
+**** xcomp
+For open complement clauses the PMB does not create a new box, so we treat =xcomp=
+differently to =ccomp= (which does). These rules assume that the shared argument is
+an =nsubj= of the open complement clause.
+
+=xcomp= sub-trees combine with the verb they contain to produce something looking
+for an entity (the controller) and an event (the upstairs clause's event), while
+adding the information that there is an =xcomp= relation between that event and
+this clause's, and that the missing entity is the =nsubj= of this clause.
+#+begin_src unlu-rules
+relation = xcomp; coarsePos = VERB; ~ nsubj {} -> \V.\X.\E.(V(\E1.(([],[xcomp(E,E1), nsubj(E1,X)])))) : x(!) -o (e(!) -o v(!) -o t(!))
+#+end_src
+
+The =xcomp= node then takes this dependency, existentially closes the =e=-type
+dependency, and hooks up the =v=-type dependency to the main clause.
+#+begin_src unlu-rules
+relation = xcomp; coarsePos = VERB; ~ nsubj {} -> \W.\V.\F.(V(\E.(([X],[control_rel(E,X)]) + W(X)(E) + F(E)))) : (e(!) -o v(!) -o t(!)) -o (x(^) -o x(^))
+#+end_src
+
+We take this slightly roundabout route in order to make coordination easier to
+model -- it just adds more information to the first meaning, which gets closed
+off and hooked up by the same meaning as in a simple non-coordinated =xcomp=.
+
+**** advcl
+#+begin_src unlu-rules
+relation = advcl; ~ mark { } -> \U.\V.\F.V(\E.(([], [advcl^(E, U(\G.([],[])))]) + F(E))) : x(!) -o x(^) -o x(^)
+#+end_src
+
+**** acl
+General =acl= dependents:
+#+begin_src unlu-rules
+relation = acl; coarsePos = VERB -> \V.\P.\X.(V(\E.(P(X) + ([], [Participant*(E,X)])))) : x(!) -o (@et(^) -o @et(^))
+#+end_src
+
+Relative clauses in particular (which are =acl:relcl=):
+#+begin_src unlu-rules
+relation = acl:relcl -> \P.\V.\X.(P(X) + ((V(X))(\X.([],[])))) : (@et(^) -o ((e(! gf* gf{PronType=Rel}) -o x(!)) -o @et(^)))
+#+end_src
+
+*** Modifier relations
+**** nmod
+#+begin_src unlu-rules
+relation = nmod; ~ case { } -> \Q.\P.\X.((Q(\Y.([], [nmod*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^) -o @et(^)))
+relation = case; ^ {relation = nmod} -> \Q.\P.\X.((Q(\Y.([], [:LEMMA:(X,Y)] ))) + P(X)) : (@quant("^" "^ ^") -o (@et(^ ^) -o @et(^ ^)))
+relation = case; ^ {relation = nmod:poss} ->
+relation = nmod:poss ->  \Q.\P.\X.((Q(\Y.([], [poss*(X,Y)] ))) + P(X)) : (@quant("!" "^") -o (@et(^) -o @et(^)))
+#+end_src
+
+**** amod
+Turns a verbal =amod= into a nominal modifier:
+#+begin_src unlu-rules
+coarsePos = VERB; relation = amod -> \V.\P.\X.(V(\E.([],[Attribute^(X,E)])) + P(X)) : (x(!) -o (@et(^) -o @et(^)))
+#+end_src
+
+For adjective =amod=​s: introduce a situation variable
+#+begin_src unlu-rules
+coarsePos = ADJ; relation = amod -> \F.(([E],[:INTR:*(E), :LEMMA:(E)]) + F(E) ) : x(!)
+#+end_src
+
+Do the same if it is coordinated:
+#+begin_src unlu-rules
+coarsePos = ADJ; ^ {relation = amod} -> \F.(([E],[:INTR:*(E), :LEMMA:(E)]) + F(E) ) : x(!)
+#+end_src
+
+Turn the situation into a modifier of type =<e,t>= things:
+#+begin_src unlu-rules
+coarsePos = ADJ; relation = amod -> \A.\P.\X.(A(\E.([],[Attribute^(X,E)])) + P(X)) : (x(!) -o (@et(^) -o @et(^)))
+#+end_src
+
+**** advmod
+***** Basic usage
+Basic =advmod= meaning:
+#+begin_src unlu-rules
+relation = advmod; ~ ! {PronType=Int}; @AFFIRMATIVE -> \X.(([],[:INTR:*(X), :LEMMA:*(X)])) : v(!) -o t(!)
+#+end_src
+
+Using basic meaning to produce a clausal modifier type meaning:
+#+begin_src unlu-rules
+relation = advmod; ~ ! {PronType=Int}; ~ ^ {relation = (amod|advmod)}; @AFFIRMATIVE ->  \Q.\P.\F.P(\E(([X], [advmod*(E,X)]) + F(E) + Q(X))) : (v(!) -o t(!)) -o (x(^) -o x(^))
+#+end_src
+
+Using basic meaning to produce a meaning adverbial modifier type meaning (e.g. /very quickly/):
+#+begin_src unlu-rules
+relation = advmod; ~ ! {PronType=Int}; ^ {relation = (amod|advmod)}; @AFFIRMATIVE -> \Q.\P.\X.(([Y],[:INTR:*(Y), :LEMMA:*(Y), advmod*(X,Y)]) + P(X) + Q(X)) : (v(!) -o t(!)) -o (v(^) -o t(^)) -o v(^) -o t(^)
+#+end_src
+
+***** Clausal interrogatives
+Clausal interrogative =advmod=:
+#+begin_src unlu-rules
+relation = advmod; !{PronType=Int}; ~ ^ {relation = (amod|advmod)} -> \P.\F.P(\E(([X], [:INTR:*(X), EQ*(X, `?`), :LEMMA:*(E,X)]) + F(E))) : (x(^) -o x(^))
+#+end_src
+
+Complex interrogative =advmod= ('How often ...'? etc.):
+#+begin_src unlu-rules
+relation = advmod; !{PronType=Int}; ^ {relation = (amod|advmod)} -> \P.\X.(([Y],[:INTR:*(Y), EQ*(Y, `?`), :LEMMA:*(X,Y)]) + P(X)) : (v(^) -o t(^)) -o v(^) -o t(^)
+#+end_src
+
+**** appos
+#+begin_src unlu-rules
+relation = appos -> \P.\Q.\X.(P(X) + Q(X)) : (@et(!) -o (@et(^) -o @et(^)))
+#+end_src
+
+**** nummod
+Nothing yet.
+*** 'Functional' relations
+**** aux
+All of this is potentially very English-centric.
+
+Future 'will' in English is only marked by *lack* of tense features on the
+auxiliary or the main verb. For the moment, we implement a lexeme-specific hack,
+therefore. (Could have the verb trigger this, but leaving it here as it makes
+the assignments for ML easier -- we can use the same template, since this is the
+node introducing the time variable)
+
+'Will' has no tense feature, so including this condition here as a failsafe so
+that later rules don't also fire.
+#+begin_src unlu-rules
+relation = aux; lemma = @FUTURE-AUX ; @NO-TENSE(!) -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+Auxiliaries provide tense if the main predicate has no tense marking itself --
+this is true of English 'do', for example, but is it true in general?
+
+A template to check if a node has no tense specification:
+#+begin_src unlu-rules :tangle universal-templates.dat
+@NO-TENSE 1 = ~ #1 {Tense=Past}; ~ #1 {Tense=Pres}; ~ #1 {Tense=Fut}; ~ #1 {Tense=Imp}; ~ #1 {Tense=Pqp}
+#+end_src
+
+The rules which take the tense from the =aux= if the verb has no tense marking:
+#+begin_src unlu-rules
+relation = aux; Tense=Pres; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Past; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Fut; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Imp; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux; Tense=Pqp; VerbForm=Fin; @NO-TENSE(^) -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+Modals provide present tense by default
+#+begin_src unlu-rules
+relation = aux; @NO-TENSE(!); @NO-TENSE(^); ~ lemma = @FUTURE-AUX -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+Passives get their tense from the =aux= not the participle:
+#+begin_src unlu-rules
+relation = aux:pass; ! {Tense=Pres}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Past}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Fut}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Imp}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = aux:pass; ! {Tense=Pqp}; ~ ^ aux{lemma = @FUTURE-AUX } -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+These three rules are especially English-centric:
+
+If there are *no* tense-providing auxiliaries and this is passive (and there is no
+'will'), make it present(?) tense (e.g. /He could be helped/):
+#+begin_src unlu-rules
+relation = aux:pass; @NO-TENSE(!); @NO-TENSE(^ aux); ~ ^ aux {lemma=@FUTURE-AUX } -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+Present progressive of passive (/he is being helped/): =aux:pass= has no tense, something has =Tense=Pres= (the
+BE =aux=), and nothing has past (the HAVE =aux= of the perfect):
+#+begin_src unlu-rules
+relation = aux:pass; @NO-TENSE(!); ^ aux {Tense=Pres}; ~ ^ aux {Tense=Past} -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+Present perfect progressive of passive (/He has been being helped/): =aux:pass= has
+no tense, something has past (the HAVE =aux= of the perfect, but also the BE =aux=
+as /been/):
+#+begin_src unlu-rules
+relation = aux:pass; @NO-TENSE(!); ^ aux {Tense=Past} -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+**** cop
+Same as tense rules:
+#+begin_src unlu-rules
+relation = cop; Tense=Pres -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Past -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Fut -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Imp -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+relation = cop; Tense=Pqp -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(^) -o x(^)
+#+end_src
+
+**** mark
+Ignore the infinitival marker when duplicated by other subjunctions (as in the /for ... to .../ construction):
+#+begin_src unlu-rules
+relation = mark; lemma = @INF-MARK ; ^ mark {lemma != @INF-MARK } ->
+#+end_src
+
+Keep it when alone in an =advcl= to mediate the relation between the infinitive and the main clause:
+#+begin_src unlu-rules
+relation = mark; ^ {relation = advcl} -> \U.\V.\F.V(\E.(([], [:LEMMA:(E, U(\G.([],[])))]) + F(E))) : x(^) -o x(^ ^) -o x(^ ^)
+#+end_src
+
+Keep it, suffixed with =-ccomp= as the relation between a complement clause and the main clause (=that-ccomp=, =whether-ccomp=, etc.):
+#+begin_src unlu-rules
+relation = mark; ^ {relation = ccomp} -> \U.\V.\F.V(\E.(([], [:LEMMA:_ccomp(E, U(\G.([],[])))]) + F(E))) : x(^) -o x(^ ^) -o x(^ ^)
+#+end_src
+
+**** det
+Ignore determiners on appositions
+#+begin_src unlu-rules
+coarsePos = DET; ^ {relation = appos} ->
+#+end_src
+
+Interrogative determiners (type "which")
+#+begin_src unlu-rules
+relation = det; ! {PronType=Int} -> \P.\Q.(([X],[:INTR:*(X), EQ*(X,`?`)]) + P(X) + Q(X) ) : (@et(^) -o ((e(^) -o p(%h)) -o p(%h))) : %h = ^ ^
+#+end_src
+
+Using =%h = ^ ^ ^*= gives us non-local scopes, but for now we just use =^ ^= so we
+don't have to debug non-existing readings.
+#+begin_src unlu-rules
+relation = det; lemma = @DEFINITE-DET -> \P.\Q.(([],[PRESUPPOSITION((([X],[:INTR:*(X)]) + P(X)))]) + Q(X)) : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+relation = det; lemma = @INDEFINITE-DET ->   \P.\Q.(([X],[:INTR:*(X)]) + P(X) + Q(X) )  : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+relation = det; lemma = @UNIVERSAL-QUANTIFIER -> \P.\Q.([ ],[ ((([X],[:INTR:*(X)]) + P(X)) => (Q(X))) ]) : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+#+end_src
+
+Basic rule for languages where we don't have the list of lemmas (uses definite determiner MC)
+#+begin_src unlu-rules
+# relation = det; Definite=Def -> \P.\Q.(([],[PRESUPPOSITION((([X],[:INTR:*(X)]) + P(X)))]) + Q(X)) : (@et(^) -o @quant("^" "%h")) : %h = @det-scope
+#+end_src
+
+Nouns without a =det= daughter contribute a default existential determiner.
+Note that this kind of "implicit" determiner for now only allows local scopings
+#+begin_src unlu-rules
+coarsePos = NOUN; ~ det { }; ~ ! {relation=compound} -> \P.\Q.(([X],[:INTR:*(X)]) + P(X) + Q(X) ) : (@et(!) -o @quant("!" "^"))
+#+end_src
+
+Proper nouns do not introduce a discourse referent if they are =appos= (so do not go in the root DRS).
+Scope of =quant= was =%R= before, but this relies on implementation of variable scope points/no chopping.
+#+begin_src unlu-rules
+coarsePos = PROPN; ~ relation = appos; ~ relation = compound; ~ det { } -> \P.\Q.(([],[PRESUPPOSITION((([X],[:INTR:*(X)]) + P(X)))]) + Q(X)) : (@et(!) -o @quant("!" "^"))
+#+end_src
+
+**** clf
+Nothing yet.
+
+**** case
+Nothing specifically here -- handled in e.g. rules for =obl=.
+
+*** Miscellaneous relations
+**** compound
+#+begin_src unlu-rules
+relation = compound; coarsePos = NOUN|PROPN -> \Q.\P.\X.(([Y], [compound(X,Y)]) + Q(Y) + P(X))  : @et(!) -o @et(^) -o @et(^)
+#+end_src
+
+**** vocative
+Ignored for now
+
+**** expl
+Ignored for now
+
+**** dislocated
+Ignored for now
+* Emacs local variables
+# Local Variables:
+# after-save-hook: org-babel-tangle
+# End:

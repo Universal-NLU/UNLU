@@ -1,0 +1,33 @@
+{
+"prefix": "../glue-for-UD/",
+"languages" : {
+	"eng": {
+		"stanza_lang_code":"en",
+		"stanza_processors":"tokenize,mwt,pos,lemma,depparse",
+		"rules":["rules.dat", ""],
+		"chop_rules":["chopRules.dat", ""],
+		"templates":["universal-templates.dat", "en-templates.dat"]
+		},
+	"ita": {
+		"stanza_lang_code":"it",
+		"stanza_processors":"tokenize,mwt,pos,lemma,depparse",
+		"rules":["rules.dat", ""],
+		"chop_rules":["chopRules.dat", ""],
+		"templates":["universal-templates.dat", "it-templates.dat"]
+		},
+	"deu": {
+		"stanza_lang_code":"de",
+		"stanza_processors":"tokenize,mwt,pos,lemma,depparse",
+		"rules":["rules.dat", ""],
+		"chop_rules":["chopRules.dat", ""],
+		"templates":["universal-templates.dat", "de-templates.dat"]
+		},
+	"nld": {
+		"stanza_lang_code":"nl",
+		"stanza_processors":"tokenize,pos,lemma,depparse",
+		"rules":["rules.dat", ""],
+		"chop_rules":["chopRules.dat", ""],
+		"templates":["universal-templates.dat", "nl-templates.dat"]
+		}
+	}
+}

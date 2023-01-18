@@ -1,0 +1,13 @@
+@FUTURE-AUX 0 = werden
+
+@DEFINITE-DET 0 = (der|dies)
+
+@INDEFINITE-DET 0 = (ein|einige)
+
+@UNIVERSAL-QUANTIFIER 0 = jed
+
+@INF-MARK 0 = zu
+
+@CONJUNCTION 0 = und
+
+@DISJUNCTION 0 = oder
