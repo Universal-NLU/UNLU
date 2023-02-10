@@ -562,27 +562,27 @@ the semantic tense. However, in the absence of any auxiliaries, the verb's =Tens
 
 Past tense:
 #+begin_src unlu-rules
-coarsePos = VERB; ~ aux; Tense=Past -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+coarsePos = VERB; ~ aux {}; Tense=Past -> \V.\F.(V(\E.(@PAST-DRS("T" "E") + F(E)))) : x(!) -o x(!)
 #+end_src
 
 Present tense:
 #+begin_src unlu-rules
-coarsePos = VERB; ~ aux; Tense=Pres -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+coarsePos = VERB; ~ aux {}; Tense=Pres -> \V.\F.(V(\E.(@PRES-DRS("T" "E") + F(E)))) : x(!) -o x(!)
 #+end_src
 
 Future tense:
 #+begin_src unlu-rules
-coarsePos = VERB; ~ aux; Tense=Fut -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+coarsePos = VERB; ~ aux {}; Tense=Fut -> \V.\F.(V(\E.(@FUT-DRS("T" "E") + F(E)))) : x(!) -o x(!)
 #+end_src
 
 Imperfect 'tense':
 #+begin_src unlu-rules
-coarsePos = VERB; ~ aux; Tense=Imp -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+coarsePos = VERB; ~ aux {}; Tense=Imp -> \V.\F.(V(\E.(@IMP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
 #+end_src
 
 Pluperfect 'tense':
 #+begin_src unlu-rules
-coarsePos = VERB; ~ aux; Tense=Pqp -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
+coarsePos = VERB; ~ aux {}; Tense=Pqp -> \V.\F.(V(\E.(@PQP-DRS("T" "E") + F(E)))) : x(!) -o x(!)
 #+end_src
 *** Nouns
 Common nouns and proper nouns both introduce a type <e,t> meaning:
